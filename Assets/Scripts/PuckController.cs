@@ -1,4 +1,5 @@
 using MLAPI;
+using MLAPI.Messaging;
 using MLAPI.NetworkVariable;
 
 using UnityEngine;
@@ -29,13 +30,13 @@ public class PuckController : NetworkBehaviour {
 	}
 
 	public void RandomLaunch() {
-		Vector2 newDirection = new Vector2(Random.Range(-1, 1), Random.Range(-1, 1));
+		Vector2 newDirection = new Vector2(Random.Range(-1f, 1f), Random.Range(-1f, 1f));
 		newDirection.Normalize();
 
 		direction.Value = newDirection;
 
 		if (newDirection.x > 0) {
-			networkObject.ChangeOwnership(2);
+			PassOwnershipServerRpc(0);
 		}
 	}
 
@@ -47,18 +48,22 @@ public class PuckController : NetworkBehaviour {
 			GameObject colliderGameObject = collision.collider.gameObject;
 			if (colliderGameObject.tag == "Player") {
 				ulong paddleOwner = colliderGameObject.GetComponent<NetworkObject>().OwnerClientId;
-
-				switch (paddleOwner) {
-					case 0:
-						networkObject.ChangeOwnership(2);
-						break;
-					case 2:
-						networkObject.ChangeOwnership(0);
-						break;
-				}
+				PassOwnershipServerRpc(paddleOwner);
 			}
 
 			hitLocation.Value = transform.position;
+		}
+	}
+
+	[ServerRpc]
+	void PassOwnershipServerRpc(ulong paddleOwner) {
+		switch (paddleOwner) {
+			case 0:
+				networkObject.ChangeOwnership(2);
+				break;
+			case 2:
+				networkObject.ChangeOwnership(0);
+				break;
 		}
 	}
 
