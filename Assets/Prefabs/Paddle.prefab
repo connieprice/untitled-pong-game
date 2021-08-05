@@ -131,11 +131,11 @@ MonoBehaviour:
   FixedSendsPerSecond: 60
   AssumeSyncedSends: 1
   InterpolatePosition: 1
-  SnapDistance: 10
+  SnapDistance: 50
   InterpolateServer: 1
-  MinMeters: 0.03
+  MinMeters: 0.01
   MinDegrees: 1.5
-  ExtrapolatePosition: 1
+  ExtrapolatePosition: 0
   MaxSendsToExtrapolate: 1
   Channel: 
   EnableRange: 0

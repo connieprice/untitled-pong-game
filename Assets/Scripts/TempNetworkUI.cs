@@ -1,6 +1,9 @@
 using MLAPI;
+using MLAPI.Puncher.Client;
 using MLAPI.Transports.UNET;
 using System;
+using System.Net;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class TempNetworkUI : MonoBehaviour {
@@ -23,7 +26,6 @@ public class TempNetworkUI : MonoBehaviour {
     }
 
     static private string address = "127.0.0.1";
-    static private string port = "7777";
 
     static void StartTextBox() {
         GUILayout.BeginHorizontal();
@@ -31,34 +33,45 @@ public class TempNetworkUI : MonoBehaviour {
         GUILayout.Label("Address:");
         address = GUILayout.TextField(address);
 
-        GUILayout.Label("Port:");
-        port = GUILayout.TextField(port);
-
         GUILayout.EndHorizontal();
     }
 
-    static bool HandleAddressPort() {
-        int portInt;
-        bool worked = Int32.TryParse(port, out portInt);
+    static string PUNCH_ADDRESS = "connieprice.co.uk";
+    static ushort PUNCH_PORT = 6776;
 
-        if (worked) {
-            transport.ConnectAddress = address;
+    static void NATListen() {
+        Task listenTask = Task.Factory.StartNew(() => {
+            using (PuncherClient listenPeer = new PuncherClient(PUNCH_ADDRESS, PUNCH_PORT)) {
+                Debug.Log("[LISTENER] Listening for single punch on our port 7777...");
+                IPEndPoint endpoint = listenPeer.ListenForSinglePunch(new IPEndPoint(IPAddress.Any, 7777));
+                Debug.Log("[LISTENER] Connector: " + endpoint + " punched through our NAT");
+            }
+        });
+    }
 
-            transport.ConnectPort = portInt;
-            transport.ServerListenPort = portInt;
+    static bool NATPunch() {
+        using (PuncherClient connector = new PuncherClient(PUNCH_ADDRESS, PUNCH_PORT)) {
+            IPEndPoint remoteEndPoint;
+            bool punchSuccessful = connector.TryPunch(IPAddress.Parse(address), out remoteEndPoint);
+            
+            if (punchSuccessful) {
+                transport.ConnectAddress = remoteEndPoint.Address.ToString();
+                transport.ConnectPort = remoteEndPoint.Port;
+
+                return true;
+            }
         }
 
-        return worked;
+        return false;
     }
 
     static void Host() {
-        if (HandleAddressPort()) {
-            NetworkManager.Singleton.StartHost();
-        }
+        NetworkManager.Singleton.StartHost();
+        NATListen();
     }
 
     static void Connect() {
-        if (HandleAddressPort()) {
+        if (NATPunch()) {
             NetworkManager.Singleton.StartClient();
         }
     }
