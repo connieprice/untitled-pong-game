@@ -217,7 +217,7 @@ MonoBehaviour:
     ClientConnectionBufferTimeout: 10
     ConnectionApproval: 0
     ConnectionData: 
-    EnableTimeResync: 0
+    EnableTimeResync: 1
     TimeResyncInterval: 30
     EnableNetworkVariable: 1
     EnsureNetworkVariableLengthSafety: 0

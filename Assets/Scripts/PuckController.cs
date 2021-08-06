@@ -27,6 +27,8 @@ public class PuckController : NetworkBehaviour {
 
 		networkObject = GetComponent<NetworkObject>();
 		rigidBody = GetComponent<Rigidbody2D>();
+
+		hitLocation.OnValueChanged += HitLocationChanged;
 	}
 
 	public void RandomLaunch() {
@@ -68,6 +70,7 @@ public class PuckController : NetworkBehaviour {
 	}
 
 	void HitLocationChanged(Vector3 previousHit, Vector3 nextHit) {
+		Debug.Log("Hit");
 		if (!IsOwner) {
 			transform.position = nextHit;
 		}
